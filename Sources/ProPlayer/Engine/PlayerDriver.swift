@@ -9,7 +9,7 @@ public protocol PlayerDriver: AnyObject {
     
     func play(rate: Float)
     func pause()
-    func seek(to time: CMTime, completion: @escaping (Bool) -> Void)
+    func seek(to time: CMTime, completion: @escaping @Sendable (Bool) -> Void)
     func replaceItem(with item: AVPlayerItem?)
     
     /// Periodic time observation (returns a removal token).
@@ -32,7 +32,7 @@ public final class AVPlayerDriver: PlayerDriver {
         player.pause()
     }
     
-    public func seek(to time: CMTime, completion: @escaping (Bool) -> Void) {
+    public func seek(to time: CMTime, completion: @escaping @Sendable (Bool) -> Void) {
         player.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) { finished in
             completion(finished)
         }

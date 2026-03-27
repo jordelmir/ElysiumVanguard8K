@@ -1,6 +1,6 @@
 import Foundation
 import CoreMedia
-import AVFoundation
+@preconcurrency import AVFoundation
 
 /// Handles the raw extraction of CVPixelBuffers from the AVPlayer pipeline.
 @MainActor
@@ -31,12 +31,10 @@ public final class VideoFrameExtractor: ObservableObject {
         
         // We use bi-planar 420 YpCbCr natively for speed, but let's stick to 32BGRA
         // initially so we can use CoreImage easily before switching to raw Metal YUV.
-        let attributes: [String: Any] = [
+        let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
             String(kCVPixelBufferPixelFormatTypeKey): Int(kCVPixelFormatType_32BGRA),
             String(kCVPixelBufferMetalCompatibilityKey): true
-        ]
-        
-        let output = AVPlayerItemVideoOutput(pixelBufferAttributes: attributes)
+        ])
         // Note: You must suppress automatic display to get correct manual times
         output.suppressesPlayerRendering = true 
         

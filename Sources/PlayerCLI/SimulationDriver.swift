@@ -88,7 +88,7 @@ final class SimulationDriver: PlayerDriver {
         playTask?.cancel()
     }
     
-    func seek(to time: CMTime, completion: @escaping (Bool) -> Void) {
+    func seek(to time: CMTime, completion: @escaping @Sendable (Bool) -> Void) {
         let currentSeekId = activeSeekCount + 1
         activeSeekCount = currentSeekId
         

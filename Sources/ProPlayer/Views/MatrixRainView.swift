@@ -41,7 +41,7 @@ struct MatrixRainView: View {
             .onAppear {
                 setupColumns(in: geometry.size)
             }
-            .onChange(of: geometry.size) { newSize in
+            .onChange(of: geometry.size) { _, newSize in
                 setupColumns(in: newSize)
             }
         }
