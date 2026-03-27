@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 @main
-struct ProPlayerApp: App {
+struct ElysiumVanguardApp: App {
 
     var body: some Scene {
         WindowGroup {

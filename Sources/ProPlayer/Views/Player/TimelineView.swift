@@ -48,6 +48,7 @@ struct TimelineView: View {
                     let progressWidth = geo.size.width * displayProgress
                     RoundedRectangle(cornerRadius: isHovering ? 4 : 2.5)
                         .fill(ProTheme.Colors.accentGradient)
+                        .shadow(color: ProTheme.Colors.accentBlue.opacity(0.5), radius: isHovering ? 6 : 0)
                         .frame(width: max(0, min(geo.size.width, progressWidth)))
 
                     // Thumb

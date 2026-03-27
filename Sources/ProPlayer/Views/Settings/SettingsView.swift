@@ -11,8 +11,10 @@ struct SettingsView: View {
             audioTab.tabItem { Label("Audio", systemImage: "speaker.wave.3") }
             subtitlesTab.tabItem { Label("Subtitles", systemImage: "captions.bubble") }
         }
-        .frame(width: 480, height: 380)
+        .frame(width: 480, height: 420)
         .padding()
+        .background(ProTheme.Colors.deepBlack)
+        .tint(ProTheme.Colors.accentBlue)
         .onChange(of: settings) { _, newValue in
             newValue.save()
         }

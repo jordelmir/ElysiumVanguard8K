@@ -121,7 +121,7 @@ struct LibraryView: View {
                     .foregroundColor(ProTheme.Colors.textTertiary)
                 TextField("Search videos...", text: $libraryVM.searchText)
                     .textFieldStyle(.plain)
-                    .frame(width: 200)
+                    .frame(maxWidth: 400)
                 if !libraryVM.searchText.isEmpty {
                     Button { libraryVM.searchText = "" } label: {
                         Image(systemName: "xmark.circle.fill")
@@ -286,54 +286,63 @@ struct LibraryView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: ProTheme.Spacing.xl) {
-            Spacer()
+        ZStack {
+            MatrixRainView()
+                .opacity(0.12)
+                .ignoresSafeArea()
 
-            BreathingLogoView(size: 140, glowRadius: 35)
-                .padding(.bottom, ProTheme.Spacing.lg)
+            VStack(spacing: ProTheme.Spacing.xxl) {
+                Spacer()
 
-            Text("Your Library is Empty")
-                .font(ProTheme.Fonts.displayMedium)
-                .foregroundColor(ProTheme.Colors.textPrimary)
+                BreathingLogoView(size: 140, glowRadius: 35)
+                    .padding(.bottom, ProTheme.Spacing.lg)
 
-            Text("Add videos to get started. You can drag & drop files,\nor use the buttons below.")
-                .font(ProTheme.Fonts.body)
-                .foregroundColor(ProTheme.Colors.textSecondary)
-                .multilineTextAlignment(.center)
+                Text("Your Library is Empty")
+                    .font(ProTheme.Fonts.displayMedium)
+                    .foregroundColor(ProTheme.Colors.textPrimary)
+                    .shadow(color: ProTheme.Colors.accentBlue.opacity(0.3), radius: 10)
 
-            HStack(spacing: ProTheme.Spacing.lg) {
-                Button {
-                    if let urls = libraryVM.showOpenFileDialog() {
-                        libraryVM.addVideoFiles(urls)
+                Text("Add videos to get started. You can drag & drop files,\nor use the buttons below.")
+                    .font(ProTheme.Fonts.body)
+                    .foregroundColor(ProTheme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+
+                HStack(spacing: ProTheme.Spacing.lg) {
+                    Button {
+                        if let urls = libraryVM.showOpenFileDialog() {
+                            libraryVM.addVideoFiles(urls)
+                        }
+                    } label: {
+                        Label("Add Files", systemImage: "plus.circle.fill")
+                            .font(ProTheme.Fonts.subheadline)
+                            .padding(.horizontal, ProTheme.Spacing.xl)
+                            .padding(.vertical, ProTheme.Spacing.md)
+                            .background(ProTheme.Colors.accentBlue)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: ProTheme.Radius.medium))
+                            .shadow(color: ProTheme.Colors.accentBlue.opacity(0.5), radius: 10)
                     }
-                } label: {
-                    Label("Add Files", systemImage: "plus.circle.fill")
-                        .font(ProTheme.Fonts.subheadline)
-                        .padding(.horizontal, ProTheme.Spacing.xl)
-                        .padding(.vertical, ProTheme.Spacing.md)
-                        .background(ProTheme.Colors.accentBlue)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: ProTheme.Radius.medium))
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                Button {
-                    if let url = libraryVM.showOpenFolderDialog() {
-                        libraryVM.addFolder(url)
+                    Button {
+                        if let url = libraryVM.showOpenFolderDialog() {
+                            libraryVM.addFolder(url)
+                        }
+                    } label: {
+                        Label("Add Folder", systemImage: "folder.badge.plus")
+                            .font(ProTheme.Fonts.subheadline)
+                            .padding(.horizontal, ProTheme.Spacing.xl)
+                            .padding(.vertical, ProTheme.Spacing.md)
+                            .background(ProTheme.Colors.surfaceMedium)
+                            .foregroundColor(ProTheme.Colors.textPrimary)
+                            .clipShape(RoundedRectangle(cornerRadius: ProTheme.Radius.medium))
                     }
-                } label: {
-                    Label("Add Folder", systemImage: "folder.badge.plus")
-                        .font(ProTheme.Fonts.subheadline)
-                        .padding(.horizontal, ProTheme.Spacing.xl)
-                        .padding(.vertical, ProTheme.Spacing.md)
-                        .background(ProTheme.Colors.surfaceMedium)
-                        .foregroundColor(ProTheme.Colors.textPrimary)
-                        .clipShape(RoundedRectangle(cornerRadius: ProTheme.Radius.medium))
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+
+                Spacer()
             }
-
-            Spacer()
+            .frame(maxWidth: 400)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

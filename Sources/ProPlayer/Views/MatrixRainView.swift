@@ -21,7 +21,7 @@ struct MatrixRainView: View {
                         let yPos = col.y - CGFloat(index * 20)
                         if yPos > 0 && yPos < size.height {
                             let opacity = 1.0 - (Double(index) / Double(col.length))
-                            let color = index == 0 ? Color.white : Color(red: 0.1, green: 0.9, blue: 0.2)
+                            let color = index == 0 ? Color.white : Color(red: 0.1, green: 0.9, blue: 1.0)
                             
                             context.opacity = opacity
                             context.draw(

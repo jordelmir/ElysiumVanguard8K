@@ -7,10 +7,14 @@ struct OSDView: View {
         Text(message)
             .font(ProTheme.Fonts.osd)
             .foregroundColor(ProTheme.Colors.textPrimary)
+            .shadow(color: ProTheme.Colors.accentBlue.opacity(0.8), radius: 8)
             .padding(.horizontal, ProTheme.Spacing.xl)
             .padding(.vertical, ProTheme.Spacing.md)
-            .glassBackground(cornerRadius: ProTheme.Radius.large, opacity: 0.5)
-            .shadow(color: .black.opacity(0.5), radius: 12, x: 0, y: 4)
+            .glassBackground(cornerRadius: ProTheme.Radius.large, opacity: 0.6)
+            .overlay(
+                RoundedRectangle(cornerRadius: ProTheme.Radius.large)
+                    .stroke(ProTheme.Colors.accentBlue.opacity(0.3), lineWidth: 1)
+            )
             .transition(.opacity.combined(with: .scale(scale: 0.9)))
     }
 }
@@ -23,8 +27,9 @@ struct VideoInfoOverlay: View {
             Text("Video Information")
                 .font(ProTheme.Fonts.headline)
                 .foregroundColor(ProTheme.Colors.accentBlue)
+                .shadow(color: ProTheme.Colors.accentBlue.opacity(0.5), radius: 4)
 
-            Divider().background(ProTheme.Colors.textTertiary)
+            Divider().background(ProTheme.Colors.accentBlue.opacity(0.5))
 
             infoRow("Title", engine.currentItemTitle)
             infoRow("Time", "\(FormatUtils.timeString(from: engine.currentTime)) / \(FormatUtils.timeString(from: engine.duration))")
