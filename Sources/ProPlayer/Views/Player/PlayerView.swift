@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PlayerView: View {
     @ObservedObject var viewModel: PlayerViewModel
+    var onClose: () -> Void
 
     var body: some View {
         ZStack {
@@ -14,7 +15,7 @@ struct PlayerView: View {
 
             // Controls overlay
             if viewModel.showControls || !viewModel.engine.isPlaying {
-                ControlsOverlay(viewModel: viewModel)
+                ControlsOverlay(viewModel: viewModel, onClose: onClose)
                     .transition(.opacity)
             }
 

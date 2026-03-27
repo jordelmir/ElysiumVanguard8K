@@ -90,7 +90,7 @@ struct PlayerSettings: Codable, Equatable {
     var screenshotSavePath: String = NSSearchPathForDirectoriesInDomains(.picturesDirectory, .userDomainMask, true).first ?? ""
     var showOSD: Bool = true
     var osdDuration: Double = 2.0
-    var controlsAutoHideDelay: Double = 3.0
+    var controlsAutoHideDelay: Double = 5.0
     var librarySortOption: LibrarySortOption = .dateAdded
     var libraryViewMode: LibraryViewMode = .grid
 

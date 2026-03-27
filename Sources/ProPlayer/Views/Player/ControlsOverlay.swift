@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ControlsOverlay: View {
     @ObservedObject var viewModel: PlayerViewModel
+    var onClose: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,6 +18,14 @@ struct ControlsOverlay: View {
 
     private var topBar: some View {
         HStack(spacing: ProTheme.Spacing.md) {
+            // Close button
+            Button(action: onClose) {
+                controlButton(icon: "xmark.circle.fill", size: 22, tooltip: "Close Video")
+                    .foregroundColor(ProTheme.Colors.textPrimary)
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 8)
+
             // Title
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.engine.currentItemTitle.isEmpty ? "ProPlayer" : viewModel.engine.currentItemTitle)
