@@ -151,6 +151,16 @@ final class PlayerViewModel: ObservableObject {
         window.toggleFullScreen(nil)
         isFullscreen.toggle()
     }
+    
+    // MARK: - Picture in Picture
+    
+    func setupPiP(with layer: AVPlayerLayer) {
+        engine.setupPiP(with: layer)
+    }
+    
+    func togglePiP() {
+        engine.togglePiP()
+    }
 
     // MARK: - Playlist
 

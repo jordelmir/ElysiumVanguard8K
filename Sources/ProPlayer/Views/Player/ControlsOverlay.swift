@@ -28,7 +28,7 @@ struct ControlsOverlay: View {
 
             // Title
             VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.engine.currentItemTitle.isEmpty ? "ProPlayer" : viewModel.engine.currentItemTitle)
+                Text(viewModel.engine.currentItemTitle.isEmpty ? "Elysium Vanguard" : viewModel.engine.currentItemTitle)
                     .font(ProTheme.Fonts.headline)
                     .foregroundColor(ProTheme.Colors.textPrimary)
                     .lineLimit(1)
@@ -175,11 +175,16 @@ struct ControlsOverlay: View {
 
                     // PiP
                     Button {
-                        viewModel.showOSD("PiP")
+                        viewModel.togglePiP()
                     } label: {
-                        controlButton(icon: "pip.enter", size: 14)
+                        controlButton(
+                            icon: viewModel.engine.isPiPActive ? "pip.exit" : "pip.enter",
+                            size: 14,
+                            isActive: viewModel.engine.isPiPActive
+                        )
                     }
                     .buttonStyle(.plain)
+                    .disabled(!viewModel.engine.isPiPPossible)
 
                     // Fullscreen
                     Button { viewModel.toggleFullscreen() } label: {
@@ -216,6 +221,7 @@ struct ControlsOverlay: View {
         Image(systemName: icon)
             .font(.system(size: size, weight: .semibold))
             .foregroundColor(isActive ? ProTheme.Colors.accentBlue : (isAccent ? ProTheme.Colors.accentBlue : ProTheme.Colors.textPrimary))
+            .shadow(color: isActive ? ProTheme.Colors.accentBlue.opacity(0.6) : (isAccent ? ProTheme.Colors.accentBlue.opacity(0.4) : .clear), radius: 6)
             .frame(width: size + 16, height: size + 16)
             .contentShape(Rectangle())
             .help(tooltip)

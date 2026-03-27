@@ -9,13 +9,13 @@ enum ProTheme {
     enum Colors {
         // Primary backgrounds
         static let background = Color(nsColor: NSColor.windowBackgroundColor)
-        static let deepBlack = Color(red: 0.04, green: 0.04, blue: 0.06)
-        static let surfaceDark = Color(red: 0.08, green: 0.08, blue: 0.12)
-        static let surfaceMedium = Color(red: 0.12, green: 0.12, blue: 0.16)
-        static let surfaceLight = Color(red: 0.18, green: 0.18, blue: 0.22)
+        static let deepBlack = Color(red: 0.02, green: 0.04, blue: 0.06)
+        static let surfaceDark = Color(red: 0.05, green: 0.08, blue: 0.12)
+        static let surfaceMedium = Color(red: 0.08, green: 0.12, blue: 0.18)
+        static let surfaceLight = Color(red: 0.12, green: 0.18, blue: 0.25)
 
         // Accent colors
-        static let accentBlue = Color(red: 0.0, green: 0.83, blue: 1.0)      // #00D4FF
+        static let accentBlue = Color(red: 0.1, green: 0.9, blue: 1.0)      // Elysium Cyan
         static let accentPurple = Color(red: 0.55, green: 0.36, blue: 1.0)    // #8C5CFF
         static let accentGreen = Color(red: 0.0, green: 0.87, blue: 0.62)     // #00DE9E
         static let accentOrange = Color(red: 1.0, green: 0.55, blue: 0.0)     // #FF8C00
@@ -137,8 +137,8 @@ struct HoverEffectModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isHovered ? 1.02 : 1.0)
-            .shadow(color: isHovered ? ProTheme.Colors.accentBlue.opacity(0.3) : .clear, radius: 8)
+            .scaleEffect(isHovered ? 1.03 : 1.0)
+            .shadow(color: isHovered ? ProTheme.Colors.accentBlue.opacity(0.6) : .clear, radius: 12)
             .animation(ProTheme.Animations.quick, value: isHovered)
             .onHover { hovering in isHovered = hovering }
     }

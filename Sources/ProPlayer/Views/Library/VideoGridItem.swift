@@ -100,8 +100,9 @@ struct VideoGridItem: View {
                 isHovered = hovering
             }
         }
-        .scaleEffect(isHovered ? 1.03 : 1.0)
-        .animation(ProTheme.Animations.quick, value: isHovered)
+        .scaleEffect(isHovered ? 1.04 : 1.0)
+        .shadow(color: isHovered ? ProTheme.Colors.accentBlue.opacity(0.8) : .clear, radius: 16)
+        .animation(ProTheme.Animations.spring, value: isHovered)
         .onTapGesture(count: 2) {
             onPlay()
         }

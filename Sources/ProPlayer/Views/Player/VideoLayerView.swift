@@ -7,11 +7,13 @@ import AVKit
 struct VideoLayerView: NSViewRepresentable {
     let player: AVPlayer
     let videoGravity: AVLayerVideoGravity
+    var onLayerReady: ((AVPlayerLayer) -> Void)? = nil
 
     func makeNSView(context: Context) -> PlayerLayerNSView {
         let view = PlayerLayerNSView()
         view.playerLayer.player = player
         view.playerLayer.videoGravity = videoGravity
+        onLayerReady?(view.playerLayer)
         return view
     }
 
@@ -49,12 +51,14 @@ class PlayerLayerNSView: NSView {
 struct SmartFillVideoView: NSViewRepresentable {
     let player: AVPlayer
     let videoSize: CGSize
+    var onLayerReady: ((AVPlayerLayer) -> Void)? = nil
 
     func makeNSView(context: Context) -> SmartFillNSView {
         let view = SmartFillNSView()
         view.playerLayer.player = player
         view.playerLayer.videoGravity = .resizeAspect
         view.videoNaturalSize = videoSize
+        onLayerReady?(view.playerLayer)
         return view
     }
 

@@ -1,10 +1,11 @@
 import Foundation
 import AVFoundation
+import AVKit
 import Combine
 import AppKit
 
 @MainActor
-final class PlayerEngine: ObservableObject {
+final class PlayerEngine: NSObject, ObservableObject, AVPictureInPictureControllerDelegate {
 
     // MARK: - Published State
 
@@ -25,6 +26,12 @@ final class PlayerEngine: ObservableObject {
     @Published var loopB: Double?
     var isLooping: Bool { loopA != nil && loopB != nil }
 
+    // PiP
+    @Published var isPiPActive = false
+    @Published var isPiPPossible = false
+    private var pipController: AVPictureInPictureController?
+    private var pipPossibleObservation: NSKeyValueObservation?
+
     // MARK: - Player
 
     let player = AVPlayer()
@@ -36,7 +43,8 @@ final class PlayerEngine: ObservableObject {
 
     // MARK: - Init
 
-    init() {
+    override init() {
+        super.init()
         player.volume = volume
         setupTimeObserver()
     }
@@ -48,6 +56,7 @@ final class PlayerEngine: ObservableObject {
         statusObservation?.invalidate()
         timeRangeObservation?.invalidate()
         presentationSizeObservation?.invalidate()
+        pipPossibleObservation?.invalidate()
     }
 
     // MARK: - Time Observer
@@ -257,6 +266,47 @@ final class PlayerEngine: ObservableObject {
                 // Silently handle screenshot errors
             }
         }
+    }
+
+    // MARK: - Picture in Picture
+
+    func setupPiP(with playerLayer: AVPlayerLayer) {
+        guard AVPictureInPictureController.isPictureInPictureSupported() else { return }
+
+        // If already setup for the same layer, do nothing
+        if let current = pipController, current.playerLayer == playerLayer {
+            return
+        }
+
+        // Cleanup old
+        pipPossibleObservation?.invalidate()
+        pipController = nil
+
+        pipController = AVPictureInPictureController(playerLayer: playerLayer)
+        pipController?.delegate = self
+
+        pipPossibleObservation = pipController?.observe(\.isPictureInPicturePossible, options: [.initial, .new]) { [weak self] controller, _ in
+            Task { @MainActor in
+                self?.isPiPPossible = controller.isPictureInPicturePossible
+            }
+        }
+    }
+
+    func togglePiP() {
+        guard let pipController = pipController else { return }
+        if pipController.isPictureInPictureActive {
+            pipController.stopPictureInPicture()
+        } else {
+            pipController.startPictureInPicture()
+        }
+    }
+
+    nonisolated func pictureInPictureControllerWillStartPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        Task { @MainActor in self.isPiPActive = true }
+    }
+
+    nonisolated func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        Task { @MainActor in self.isPiPActive = false }
     }
 
     // MARK: - Audio Tracks

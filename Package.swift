@@ -10,6 +10,9 @@ let package = Package(
         .executableTarget(
             name: "ProPlayer",
             path: "Sources/ProPlayer",
+            resources: [
+                .process("Resources")
+            ],
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")
             ]

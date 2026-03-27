@@ -7,7 +7,7 @@ struct PlayerView: View {
     var body: some View {
         ZStack {
             // Background
-            Color.black.ignoresSafeArea()
+            ProTheme.Colors.deepBlack.ignoresSafeArea()
 
             // Video layer
             videoContent
@@ -104,19 +104,28 @@ struct PlayerView: View {
         case .fit, .fill, .stretch:
             VideoLayerView(
                 player: viewModel.engine.player,
-                videoGravity: viewModel.gravityMode.avGravity
+                videoGravity: viewModel.gravityMode.avGravity,
+                onLayerReady: { layer in
+                    viewModel.setupPiP(with: layer)
+                }
             )
 
         case .smartFill:
             SmartFillVideoView(
                 player: viewModel.engine.player,
-                videoSize: viewModel.engine.videoSize
+                videoSize: viewModel.engine.videoSize,
+                onLayerReady: { layer in
+                    viewModel.setupPiP(with: layer)
+                }
             )
 
         case .customZoom:
             VideoLayerView(
                 player: viewModel.engine.player,
-                videoGravity: .resizeAspect
+                videoGravity: .resizeAspect,
+                onLayerReady: { layer in
+                    viewModel.setupPiP(with: layer)
+                }
             )
             .scaleEffect(viewModel.customZoomScale)
             .offset(viewModel.customZoomOffset)

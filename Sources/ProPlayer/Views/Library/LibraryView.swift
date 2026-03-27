@@ -32,6 +32,17 @@ struct LibraryView: View {
 
     private var sidebar: some View {
         List(selection: $selectedSidebarItem) {
+            Section {
+                HStack(spacing: 12) {
+                    BreathingLogoView(size: 28, glowRadius: 8)
+                    Text("ELYSIUM")
+                        .font(ProTheme.Fonts.headline)
+                        .tracking(2)
+                        .foregroundColor(Color(red: 0.1, green: 0.9, blue: 1.0))
+                }
+                .padding(.vertical, 6)
+            }
+
             Section("Library") {
                 ForEach(SidebarItem.allCases) { item in
                     Label(item.rawValue, systemImage: item.icon)
@@ -81,7 +92,12 @@ struct LibraryView: View {
                 contentView
             }
         }
-        .background(ProTheme.Colors.deepBlack)
+        .background(
+            ZStack {
+                MatrixRainView()
+                Color.black.opacity(0.7)
+            }
+        )
     }
 
     // MARK: - Toolbar
@@ -198,12 +214,14 @@ struct LibraryView: View {
                 columns: [GridItem(.adaptive(minimum: 240, maximum: 320), spacing: ProTheme.Spacing.lg)],
                 spacing: ProTheme.Spacing.xl
             ) {
-                ForEach(displayedVideos) { video in
+                ForEach(Array(displayedVideos.enumerated()), id: \.element.id) { index, video in
                     VideoGridItem(
                         item: video,
                         onPlay: { onPlayVideo(video.url) },
                         onRemove: { libraryVM.removeVideo(video) }
                     )
+                    .transition(.scale(scale: 0.85, anchor: .bottom).combined(with: .opacity))
+                    .animation(ProTheme.Animations.spring.delay(Double(index) * 0.04), value: displayedVideos.count)
                 }
             }
             .padding(ProTheme.Spacing.xl)
@@ -212,7 +230,7 @@ struct LibraryView: View {
 
     private var listView: some View {
         List {
-            ForEach(displayedVideos) { video in
+            ForEach(Array(displayedVideos.enumerated()), id: \.element.id) { index, video in
                 HStack(spacing: ProTheme.Spacing.md) {
                     // Mini thumbnail
                     ZStack {
@@ -258,6 +276,8 @@ struct LibraryView: View {
                     Button("Play") { onPlayVideo(video.url) }
                     Button("Remove") { libraryVM.removeVideo(video) }
                 }
+                .transition(.opacity.combined(with: .move(edge: .leading)))
+                .animation(ProTheme.Animations.smooth.delay(Double(index) * 0.03), value: displayedVideos.count)
             }
         }
         .listStyle(.inset)
@@ -269,11 +289,8 @@ struct LibraryView: View {
         VStack(spacing: ProTheme.Spacing.xl) {
             Spacer()
 
-            Image(systemName: "film.stack")
-                .font(.system(size: 64))
-                .foregroundStyle(
-                    ProTheme.Colors.accentGradient
-                )
+            BreathingLogoView(size: 140, glowRadius: 35)
+                .padding(.bottom, ProTheme.Spacing.lg)
 
             Text("Your Library is Empty")
                 .font(ProTheme.Fonts.displayMedium)
