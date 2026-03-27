@@ -16,9 +16,11 @@ enum VideoMetadataExtractor {
 
         // Load asset properties
         do {
+            try Task.checkCancellation()
             let duration = try await asset.load(.duration)
             item.duration = duration.seconds.isFinite ? duration.seconds : 0
 
+            try Task.checkCancellation()
             let tracks = try await asset.load(.tracks)
             if let videoTrack = tracks.first(where: { $0.mediaType == .video }) {
                 let size = try await videoTrack.load(.naturalSize)
@@ -52,10 +54,31 @@ enum VideoMetadataExtractor {
 
         let cmTime = CMTime(seconds: time, preferredTimescale: 600)
         do {
+            try Task.checkCancellation()
             let (cgImage, _) = try await generator.image(at: cmTime)
             return NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
         } catch {
             return nil
+        }
+    }
+
+    // Parallel extraction helper
+    static func extractMetadata(from urls: [URL]) async -> [VideoItem] {
+        await withTaskGroup(of: VideoItem?.self) { group in
+            for url in urls {
+                group.addTask {
+                    try? Task.checkCancellation()
+                    return await extractMetadata(from: url)
+                }
+            }
+            
+            var results: [VideoItem] = []
+            for await item in group {
+                if let item = item {
+                    results.append(item)
+                }
+            }
+            return results
         }
     }
 

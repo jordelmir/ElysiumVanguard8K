@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 
 struct OSDView: View {
     let message: String

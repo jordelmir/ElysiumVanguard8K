@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import ProPlayerEngine
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
@@ -20,7 +21,9 @@ final class PlayerViewModel: ObservableObject {
     @Published var contrast: Double = 1
     @Published var saturation: Double = 1
 
-    private var controlsTimer: Timer?
+    // Robust controls auto-hide
+    private var controlsTask: Task<Void, Never>?
+    private var osdTask: Task<Void, Never>?
 
     init() {
         gravityMode = settings.defaultGravityMode
@@ -186,12 +189,14 @@ final class PlayerViewModel: ObservableObject {
 
     func resetControlsTimer() {
         showControls = true
-        controlsTimer?.invalidate()
-        controlsTimer = Timer.scheduledTimer(withTimeInterval: settings.controlsAutoHideDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
-                guard let self = self, self.engine.isPlaying else { return }
+        controlsTask?.cancel()
+        controlsTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(settings.controlsAutoHideDelay * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            
+            if engine.isPlaying {
                 withAnimation(ProTheme.Animations.smooth) {
-                    self.showControls = false
+                    showControls = false
                 }
             }
         }
@@ -206,11 +211,14 @@ final class PlayerViewModel: ObservableObject {
     func showOSD(_ message: String) {
         guard settings.showOSD else { return }
         osdMessage = message
-        DispatchQueue.main.asyncAfter(deadline: .now() + settings.osdDuration) { [weak self] in
-            Task { @MainActor in
-                if self?.osdMessage == message {
-                    self?.osdMessage = nil
-                }
+        
+        osdTask?.cancel()
+        osdTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(settings.osdDuration * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            
+            if self.osdMessage == message {
+                self.osdMessage = nil
             }
         }
     }

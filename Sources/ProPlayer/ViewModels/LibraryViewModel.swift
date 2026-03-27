@@ -69,11 +69,13 @@ final class LibraryViewModel: ObservableObject {
     func addVideoFiles(_ urls: [URL]) {
         Task {
             isScanning = true
-            for url in urls where VideoItem.isVideoFile(url) {
-                // Check if already in library
-                guard !videos.contains(where: { $0.url == url }) else { continue }
-                let item = await VideoMetadataExtractor.extractMetadata(from: url)
-                videos.append(item)
+            let existingURLs = Set(videos.map { $0.url })
+            let filteredURLs = urls.filter { url in 
+                VideoItem.isVideoFile(url) && !existingURLs.contains(url) 
+            }
+            if !filteredURLs.isEmpty {
+                let newItems = await VideoMetadataExtractor.extractMetadata(from: filteredURLs)
+                videos.append(contentsOf: newItems)
             }
             isScanning = false
             saveLibrary()
@@ -96,11 +98,14 @@ final class LibraryViewModel: ObservableObject {
                 }
             }
 
-            for videoURL in videoURLs {
-                guard !videos.contains(where: { $0.url == videoURL }) else { continue }
-                let item = await VideoMetadataExtractor.extractMetadata(from: videoURL)
-                videos.append(item)
+            let existingURLs = Set(videos.map { $0.url })
+            let filteredURLs = videoURLs.filter { url in !existingURLs.contains(url) }
+            
+            if !filteredURLs.isEmpty {
+                let newItems = await VideoMetadataExtractor.extractMetadata(from: filteredURLs)
+                videos.append(contentsOf: newItems)
             }
+            
             isScanning = false
             saveLibrary()
         }
@@ -230,10 +235,8 @@ final class LibraryViewModel: ObservableObject {
             let newURLs = discoveredURLs.filter { !existingURLs.contains($0) }
             
             if !newURLs.isEmpty {
-                for url in newURLs {
-                    let item = await VideoMetadataExtractor.extractMetadata(from: url)
-                    videos.append(item)
-                }
+                let newItems = await VideoMetadataExtractor.extractMetadata(from: newURLs)
+                videos.append(contentsOf: newItems)
                 saveLibrary()
                 applyFiltersAndSort(searchText: searchText, sort: sortOption, source: videos)
             }

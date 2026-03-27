@@ -1,4 +1,6 @@
 import SwiftUI
+import AVKit
+import ProPlayerEngine
 
 struct PlayerView: View {
     @ObservedObject var viewModel: PlayerViewModel
@@ -54,16 +56,25 @@ struct PlayerView: View {
             }
 
             // Error message
-            if let error = viewModel.engine.errorMessage {
+            if let error = viewModel.engine.error {
                 VStack(spacing: ProTheme.Spacing.md) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 48))
                         .foregroundColor(ProTheme.Colors.accentOrange)
-                    Text(error)
+                    Text(error.localizedDescription)
                         .font(ProTheme.Fonts.subheadline)
                         .foregroundColor(ProTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
+                    
+                    Button("Cerrar") {
+                        onClose()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(ProTheme.Colors.accentBlue)
                 }
+                .padding()
+                .background(ProTheme.Colors.deepBlack.opacity(0.8))
+                .cornerRadius(12)
             }
         }
         .onHover { hovering in

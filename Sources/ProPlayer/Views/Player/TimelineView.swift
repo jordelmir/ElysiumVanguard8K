@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 
 struct TimelineView: View {
     @ObservedObject var engine: PlayerEngine

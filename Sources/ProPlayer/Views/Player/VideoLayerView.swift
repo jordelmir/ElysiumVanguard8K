@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import AVKit
+import Vision
 
 // MARK: - AVPlayerLayer NSView Wrapper
 
@@ -20,6 +21,10 @@ struct VideoLayerView: NSViewRepresentable {
     func updateNSView(_ nsView: PlayerLayerNSView, context: Context) {
         nsView.playerLayer.player = player
         nsView.playerLayer.videoGravity = videoGravity
+    }
+
+    static func dismantleNSView(_ nsView: PlayerLayerNSView, coordinator: ()) {
+        nsView.playerLayer.player = nil
     }
 }
 
@@ -41,7 +46,7 @@ class PlayerLayerNSView: NSView {
         super.layout()
         CATransaction.begin()
         CATransaction.setAnimationDuration(0.2)
-        playerLayer.frame = bounds
+        playerLayer.frame = self.bounds
         CATransaction.commit()
     }
 }
@@ -66,6 +71,10 @@ struct SmartFillVideoView: NSViewRepresentable {
         nsView.playerLayer.player = player
         nsView.videoNaturalSize = videoSize
         nsView.updateSmartFill()
+    }
+
+    static func dismantleNSView(_ nsView: SmartFillNSView, coordinator: ()) {
+        nsView.playerLayer.player = nil
     }
 }
 
@@ -92,12 +101,12 @@ class SmartFillNSView: NSView {
 
     func updateSmartFill() {
         guard videoNaturalSize.width > 0 && videoNaturalSize.height > 0 else {
-            playerLayer.frame = bounds
+            self.playerLayer.frame = self.bounds
             return
         }
 
-        let viewAspect = bounds.width / bounds.height
-        let videoAspect = videoNaturalSize.width / videoNaturalSize.height
+        let viewAspect = self.bounds.width / self.bounds.height
+        let videoAspect = self.videoNaturalSize.width / self.videoNaturalSize.height
 
         // Calculate scale needed to fill, but limit max stretch to ~15%
         let maxStretchFactor: CGFloat = 1.15
@@ -106,22 +115,22 @@ class SmartFillNSView: NSView {
 
         if videoAspect > viewAspect {
             // Video is wider -> need to scale height
-            let fitScale = bounds.width / videoNaturalSize.width
-            let fitHeight = videoNaturalSize.height * fitScale
-            let neededScale = bounds.height / fitHeight
+            let fitScale = self.bounds.width / self.videoNaturalSize.width
+            let fitHeight = self.videoNaturalSize.height * fitScale
+            let neededScale = self.bounds.height / fitHeight
             scaleY = min(neededScale, maxStretchFactor)
         } else {
             // Video is taller -> need to scale width
-            let fitScale = bounds.height / videoNaturalSize.height
-            let fitWidth = videoNaturalSize.width * fitScale
-            let neededScale = bounds.width / fitWidth
+            let fitScale = self.bounds.height / self.videoNaturalSize.height
+            let fitWidth = self.videoNaturalSize.width * fitScale
+            let neededScale = self.bounds.width / fitWidth
             scaleX = min(neededScale, maxStretchFactor)
         }
 
         CATransaction.begin()
         CATransaction.setAnimationDuration(0.3)
-        playerLayer.frame = bounds
-        playerLayer.transform = CATransform3DMakeScale(scaleX, scaleY, 1.0)
+        self.playerLayer.frame = self.bounds
+        self.playerLayer.transform = CATransform3DMakeScale(scaleX, scaleY, 1.0)
         CATransaction.commit()
     }
 }

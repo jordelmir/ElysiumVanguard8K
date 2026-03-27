@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 
 struct ControlsOverlay: View {
     @ObservedObject var viewModel: PlayerViewModel
