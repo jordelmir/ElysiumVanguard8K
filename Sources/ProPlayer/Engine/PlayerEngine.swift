@@ -40,6 +40,7 @@ final class PlayerEngine: NSObject, ObservableObject, AVPictureInPictureControll
     private var statusObservation: NSKeyValueObservation?
     private var timeRangeObservation: NSKeyValueObservation?
     private var presentationSizeObservation: NSKeyValueObservation?
+    private var playbackActivity: NSObjectProtocol?
 
     // MARK: - Init
 
@@ -140,6 +141,9 @@ final class PlayerEngine: NSObject, ObservableObject, AVPictureInPictureControll
 
         player.replaceCurrentItem(with: item)
         clearLoop()
+        
+        // Ensure activity is reset for new file
+        endPlaybackActivity()
     }
 
     // MARK: - Playback Controls
@@ -147,11 +151,13 @@ final class PlayerEngine: NSObject, ObservableObject, AVPictureInPictureControll
     func play() {
         player.rate = playbackSpeed
         isPlaying = true
+        startPlaybackActivity()
     }
 
     func pause() {
         player.pause()
         isPlaying = false
+        endPlaybackActivity()
     }
 
     func togglePlayPause() {
@@ -350,5 +356,22 @@ final class PlayerEngine: NSObject, ObservableObject, AVPictureInPictureControll
 
     var remainingTime: Double {
         max(0, duration - currentTime)
+    }
+
+    // MARK: - Sleep Prevention
+
+    private func startPlaybackActivity() {
+        guard playbackActivity == nil else { return }
+        playbackActivity = ProcessInfo.processInfo.beginActivity(
+            options: .idleDisplaySleepDisabled,
+            reason: "Video Playback"
+        )
+    }
+
+    private func endPlaybackActivity() {
+        if let activity = playbackActivity {
+            ProcessInfo.processInfo.endActivity(activity)
+            playbackActivity = nil
+        }
     }
 }
