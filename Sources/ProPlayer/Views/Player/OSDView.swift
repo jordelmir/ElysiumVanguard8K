@@ -1,5 +1,6 @@
 import SwiftUI
 import ProPlayerEngine
+import ProPlayerEngine
 
 struct OSDView: View {
     let message: String
@@ -35,7 +36,7 @@ struct VideoInfoOverlay: View {
             infoRow("Title", engine.currentItemTitle)
             infoRow("Time", "\(FormatUtils.timeString(from: engine.currentTime)) / \(FormatUtils.timeString(from: engine.duration))")
             infoRow("Resolution", "\(Int(engine.videoSize.width))×\(Int(engine.videoSize.height))")
-            infoRow("Speed", FormatUtils.speedString(engine.playbackSpeed))
+            infoRow("Speed", FormatUtils.speedString(Float(engine.playbackSpeed)))
             infoRow("Volume", "\(Int(engine.volume * 100))%")
 
             if engine.isLooping, let a = engine.loopA, let b = engine.loopB {

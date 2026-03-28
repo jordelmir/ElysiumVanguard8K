@@ -1,10 +1,10 @@
 import Foundation
 
-enum FormatUtils {
+public enum FormatUtils {
 
     // MARK: - Time Formatting
 
-    static func timeString(from seconds: Double) -> String {
+    public static func timeString(from seconds: Double) -> String {
         guard seconds.isFinite && !seconds.isNaN else { return "00:00" }
         let totalSeconds = Int(max(0, seconds))
         let hours = totalSeconds / 3600
@@ -16,7 +16,7 @@ enum FormatUtils {
         return String(format: "%02d:%02d", minutes, secs)
     }
 
-    static func detailedTimeString(from seconds: Double) -> String {
+    public static func detailedTimeString(from seconds: Double) -> String {
         guard seconds.isFinite && !seconds.isNaN else { return "00:00:00.000" }
         let totalSeconds = max(0, seconds)
         let hours = Int(totalSeconds) / 3600
@@ -28,7 +28,7 @@ enum FormatUtils {
 
     // MARK: - File Size Formatting
 
-    static func fileSizeString(from bytes: Int64) -> String {
+    public static func fileSizeString(from bytes: Int64) -> String {
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB, .useTB]
         formatter.countStyle = .file
@@ -37,7 +37,7 @@ enum FormatUtils {
 
     // MARK: - Resolution Formatting
 
-    static func resolutionString(width: Int, height: Int) -> String {
+    public static func resolutionString(width: Int, height: Int) -> String {
         if height >= 2160 { return "4K (\(width)×\(height))" }
         if height >= 1440 { return "2K (\(width)×\(height))" }
         if height >= 1080 { return "1080p (\(width)×\(height))" }
@@ -48,7 +48,7 @@ enum FormatUtils {
 
     // MARK: - Codec Name Formatting
 
-    static func codecDisplayName(_ codecType: String) -> String {
+    public static func codecDisplayName(_ codecType: String) -> String {
         switch codecType.lowercased() {
         case "avc1", "h264", "h.264": return "H.264 / AVC"
         case "hvc1", "hev1", "h265", "h.265", "hevc": return "H.265 / HEVC"
@@ -67,14 +67,14 @@ enum FormatUtils {
 
     // MARK: - Date Formatting
 
-    static func dateString(from date: Date) -> String {
+    public static func dateString(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
 
-    static func relativeDateString(from date: Date) -> String {
+    public static func relativeDateString(from date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
@@ -82,7 +82,7 @@ enum FormatUtils {
 
     // MARK: - Speed Formatting
 
-    static func speedString(_ speed: Float) -> String {
+    public static func speedString(_ speed: Float) -> String {
         if speed == 1.0 { return "Normal" }
         if speed == Float(Int(speed)) {
             return "\(Int(speed))×"

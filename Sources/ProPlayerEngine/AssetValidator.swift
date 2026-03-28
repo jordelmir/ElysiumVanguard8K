@@ -2,17 +2,17 @@ import Foundation
 @preconcurrency import AVFoundation
 
 /// Deep asset validation result.
-struct AssetValidationResult: Sendable {
-    let isValid: Bool
-    let duration: TimeInterval
-    let hasVideoTrack: Bool
-    let hasAudioTrack: Bool
-    let fileSize: Int64
-    let rejection: AssetRejection?
+public struct AssetValidationResult: Sendable {
+    public let isValid: Bool
+    public let duration: TimeInterval
+    public let hasVideoTrack: Bool
+    public let hasAudioTrack: Bool
+    public let fileSize: Int64
+    public let rejection: AssetRejection?
 }
 
 /// Reason for asset rejection.
-enum AssetRejection: Sendable, Equatable {
+public enum AssetRejection: Sendable, Equatable {
     case notPlayable
     case zeroDuration
     case noPlayableTracks
@@ -22,13 +22,13 @@ enum AssetRejection: Sendable, Equatable {
 }
 
 /// Validates assets before loading into AVPlayer.
-actor AssetValidator {
+public actor AssetValidator {
     /// Maximum file size: 50 GB
     static let maxFileSize: Int64 = 50 * 1024 * 1024 * 1024
     /// Max time allowed to parse AVAsset headers (seconds)
     static let timeoutSeconds: TimeInterval = 5.0
 
-    func validate(url: URL) async -> AssetValidationResult {
+    public func validate(url: URL) async -> AssetValidationResult {
         // 1. File system checks
         let fm = FileManager.default
         guard fm.isReadableFile(atPath: url.path) else {

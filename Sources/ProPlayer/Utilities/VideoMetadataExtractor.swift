@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import AppKit
+import ProPlayerEngine
 
 enum VideoMetadataExtractor {
 
@@ -14,75 +15,50 @@ enum VideoMetadataExtractor {
             item.fileSize = size
         }
 
-        // Load asset properties
         do {
-            try Task.checkCancellation()
-            let duration = try await asset.load(.duration)
-            item.duration = duration.seconds.isFinite ? duration.seconds : 0
+            // Load and analyze properties in parallel
+            async let duration = try asset.load(.duration)
+            async let tracks = try asset.load(.tracks)
+            
+            let loadedDuration = try await duration
+            item.duration = loadedDuration.seconds
 
-            try Task.checkCancellation()
-            let tracks = try await asset.load(.tracks)
-            if let videoTrack = tracks.first(where: { $0.mediaType == .video }) {
+            let videoTracks = try await tracks.filter { $0.mediaType == .video }
+            if let videoTrack = videoTracks.first {
                 let size = try await videoTrack.load(.naturalSize)
-                let transform = try await videoTrack.load(.preferredTransform)
-                let transformedSize = size.applying(transform)
-                item.width = Int(abs(transformedSize.width))
-                item.height = Int(abs(transformedSize.height))
-
-                let nominalFrameRate = try await videoTrack.load(.nominalFrameRate)
-                item.fps = Double(nominalFrameRate)
-
-                // Codec
-                let descriptions = try await videoTrack.load(.formatDescriptions)
-                if let desc = descriptions.first {
-                    let codecType = CMFormatDescriptionGetMediaSubType(desc)
-                    item.codec = fourCharCodeToString(codecType)
+                item.width = Int(size.width)
+                item.height = Int(size.height)
+                
+                // Track metadata like codec
+                if let formatDescription = try await videoTrack.load(.formatDescriptions).first {
+                    item.codec = CMFormatDescriptionGetMediaType(formatDescription).description
                 }
             }
         } catch {
-            // Use defaults if metadata extraction fails
+            print("Error loading metadata for \(url): \(error)")
         }
 
         return item
     }
 
-    static func generateThumbnail(for url: URL, at time: Double = 1.0, size: CGSize = CGSize(width: 320, height: 180)) async -> NSImage? {
+    /// Generates a thumbnail for a video.
+    static func generateThumbnail(for url: URL) async -> NSImage? {
         let asset = AVURLAsset(url: url)
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
-        generator.maximumSize = size
+        generator.maximumSize = CGSize(width: 400, height: 400)
 
-        let cmTime = CMTime(seconds: time, preferredTimescale: 600)
         do {
-            try Task.checkCancellation()
-            let (cgImage, _) = try await generator.image(at: cmTime)
-            return NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+            let (image, _) = try await generator.image(at: .zero)
+            return NSImage(cgImage: image, size: .zero)
         } catch {
-            return nil
+            print("Thumbnail generation failed: \(error)")
         }
+        
+        return nil
     }
 
-    // Parallel extraction helper
-    static func extractMetadata(from urls: [URL]) async -> [VideoItem] {
-        await withTaskGroup(of: VideoItem?.self) { group in
-            for url in urls {
-                group.addTask {
-                    try? Task.checkCancellation()
-                    return await extractMetadata(from: url)
-                }
-            }
-            
-            var results: [VideoItem] = []
-            for await item in group {
-                if let item = item {
-                    results.append(item)
-                }
-            }
-            return results
-        }
-    }
-
-    static func saveThumbnail(_ image: NSImage, to path: String) -> Bool {
+    private static func saveNSImage(_ image: NSImage, to path: String) -> Bool {
         guard let tiffData = image.tiffRepresentation,
               let bitmapRep = NSBitmapImageRep(data: tiffData),
               let jpegData = bitmapRep.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) else {
@@ -96,16 +72,21 @@ enum VideoMetadataExtractor {
         }
     }
 
-    // MARK: - Helpers
-
-    private static func fourCharCodeToString(_ code: FourCharCode) -> String {
-        let bytes: [UInt8] = [
-            UInt8((code >> 24) & 0xFF),
-            UInt8((code >> 16) & 0xFF),
-            UInt8((code >> 8) & 0xFF),
-            UInt8(code & 0xFF)
-        ]
-        return String(bytes: bytes, encoding: .ascii) ?? "\(code)"
+    // Parallel extraction helper
+    static func extractMetadata(from urls: [URL]) async -> [VideoItem] {
+        await withTaskGroup(of: VideoItem?.self) { group in
+            for url in urls {
+                group.addTask {
+                    await extractMetadata(from: url)
+                }
+            }
+            
+            var results: [VideoItem] = []
+            for await item in group {
+                if let item = item { results.append(item) }
+            }
+            return results
+        }
     }
 
     private static func fileCreationDate(_ url: URL) -> Date? {

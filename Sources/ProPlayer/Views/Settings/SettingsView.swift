@@ -1,19 +1,32 @@
 import SwiftUI
+import ProPlayerEngine
 
 struct SettingsView: View {
     @Binding var settings: PlayerSettings
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        TabView {
-            generalTab.tabItem { Label("General", systemImage: "gear") }
-            videoTab.tabItem { Label("Video", systemImage: "play.rectangle") }
-            audioTab.tabItem { Label("Audio", systemImage: "speaker.wave.3") }
-            subtitlesTab.tabItem { Label("Subtitles", systemImage: "captions.bubble") }
+        NavigationStack {
+            TabView {
+                generalTab.tabItem { Label("General", systemImage: "gear") }
+                videoTab.tabItem { Label("Video", systemImage: "play.rectangle") }
+                audioTab.tabItem { Label("Audio", systemImage: "speaker.wave.3") }
+                subtitlesTab.tabItem { Label("Subtitles", systemImage: "captions.bubble") }
+            }
+            .frame(width: 520, height: 460)
+            .glassBackground(cornerRadius: ProTheme.Radius.xl, opacity: 0.1)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(ProTheme.Colors.accentBlue)
+                }
+            }
+            .navigationTitle("Elite Engine Settings")
         }
-        .frame(width: 480, height: 420)
-        .padding()
-        .background(ProTheme.Colors.deepBlack)
+        .preferredColorScheme(.dark)
         .tint(ProTheme.Colors.accentBlue)
         .onChange(of: settings) { _, newValue in
             newValue.save()
@@ -59,6 +72,21 @@ struct SettingsView: View {
 
     private var videoTab: some View {
         Form {
+            Section("Elite Rendering") {
+                Picker("Upscaling Quality (Tier)", selection: $settings.renderingTier) {
+                    ForEach(SuperResolutionTier.allCases) { tier in
+                        Text(tier.rawValue).tag(tier)
+                    }
+                }
+                .pickerStyle(.menu)
+                .help("Select between standard 1080p, 2K (1440p) or 4K (2160p) upscaling modes.")
+                
+                VStack(alignment: .leading) {
+                    Text("Ambient intensity")
+                    Slider(value: $settings.ambientIntensity, in: 0...1)
+                }
+            }
+            
             Section("Screenshots") {
                 HStack {
                     Text("Save location")

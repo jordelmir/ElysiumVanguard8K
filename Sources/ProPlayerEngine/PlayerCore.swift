@@ -3,10 +3,10 @@ import Foundation
 
 /// Pure async actor for heavy media operations.
 /// No callbacks, no state — just functions.
-actor PlayerCore {
+public actor PlayerCore {
 
     /// Pre-processes an asset and returns thread-safe metadata.
-    func loadMetadata(at url: URL) async throws -> MediaMetadata {
+    public func loadMetadata(at url: URL) async throws -> MediaMetadata {
         let asset = AVURLAsset(url: url)
         let isPlayable = try await asset.load(.isPlayable)
         let duration = try await asset.load(.duration).seconds
@@ -30,7 +30,7 @@ actor PlayerCore {
     }
 
     /// Selects a media option within an item's selection group.
-    func selectOption(_ option: AVMediaSelectionOption?, in item: AVPlayerItem, characteristic: AVMediaCharacteristic) async {
+    public func selectOption(_ option: AVMediaSelectionOption?, in item: AVPlayerItem, characteristic: AVMediaCharacteristic) async {
         do {
             guard let group = try await item.asset.loadMediaSelectionGroup(for: characteristic) else { return }
             item.select(option, in: group)
@@ -40,9 +40,9 @@ actor PlayerCore {
 
 // MARK: - Sendable Types for Actor Boundaries
 
-struct MediaMetadata: Sendable {
-    let isPlayable: Bool
-    let duration: Double
-    let audioOptions: [AVMediaSelectionOption]
-    let subtitleOptions: [AVMediaSelectionOption]
+public struct MediaMetadata: Sendable {
+    public let isPlayable: Bool
+    public let duration: Double
+    public let audioOptions: [AVMediaSelectionOption]
+    public let subtitleOptions: [AVMediaSelectionOption]
 }

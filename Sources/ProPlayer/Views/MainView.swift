@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 
 struct MainView: View {
     @StateObject private var playerVM = PlayerViewModel()
@@ -24,10 +25,12 @@ struct MainView: View {
                 PlayerView(viewModel: playerVM) {
                     playerVM.stop()
                     withAnimation { currentView = .library }
+                    restoreWindowChrome()
                 }
-                    .transition(.opacity)
+                .transition(.opacity)
             }
         }
+        .edgesIgnoringSafeArea(.all)
         .frame(minWidth: 800, minHeight: 500)
         .preferredColorScheme(.dark)
         .animation(ProTheme.Animations.standard, value: currentView == .player)
@@ -77,8 +80,38 @@ struct MainView: View {
         // Add to library if not already there
         libraryVM.addVideoFiles([url])
 
+        // Configure window for immersive video playback
+        configureWindowForPlayback()
+
         // Play
         playerVM.openFile(url: url)
         withAnimation { currentView = .player }
+    }
+    
+    /// Makes the window's title bar fully transparent and extends content into it
+    private func configureWindowForPlayback() {
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible }) else { return }
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.styleMask.insert(.fullSizeContentView)
+        window.isMovableByWindowBackground = true
+        
+        // Ensure the green traffic light button triggers True Full Screen (hiding Apple Menu Bar) instead of Zoom (+)
+        window.collectionBehavior.insert(.fullScreenPrimary)
+        
+        // Ensure traffic light buttons are visible so the user can click the Full Screen button
+        window.standardWindowButton(.closeButton)?.isHidden = false
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = false
+        window.standardWindowButton(.zoomButton)?.isHidden = false
+    }
+    
+    /// Restores window chrome when leaving player mode
+    private func restoreWindowChrome() {
+        guard let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible }) else { return }
+        window.titlebarAppearsTransparent = false
+        window.titleVisibility = .visible
+        window.standardWindowButton(.closeButton)?.isHidden = false
+        window.standardWindowButton(.miniaturizeButton)?.isHidden = false
+        window.standardWindowButton(.zoomButton)?.isHidden = false
     }
 }

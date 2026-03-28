@@ -14,7 +14,7 @@ let package = Package(
     targets: [
         .target(
             name: "ProPlayerEngine",
-            path: "Sources/ProPlayer/Engine",
+            path: "Sources/ProPlayerEngine",
             resources: [
                 .process("Renderer/Shaders.metal")
             ],
@@ -26,7 +26,7 @@ let package = Package(
             name: "ProPlayer",
             dependencies: ["ProPlayerEngine"],
             path: "Sources/ProPlayer",
-            exclude: ["Engine"],
+            exclude: ["export_app.sh"],
             resources: [
                 .process("Resources")
             ],

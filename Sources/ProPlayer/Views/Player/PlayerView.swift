@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 import AVKit
 import ProPlayerEngine
 
@@ -146,7 +147,7 @@ struct PlayerView: View {
 
         Menu("Speed") {
             ForEach(PlayerEngine.availableSpeeds, id: \.self) { speed in
-                Button(FormatUtils.speedString(speed)) {
+                Button(FormatUtils.speedString(Float(speed))) {
                     viewModel.engine.setSpeed(speed)
                 }
             }

@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 
 struct LibraryView: View {
     @ObservedObject var libraryVM: LibraryViewModel
@@ -269,7 +270,7 @@ struct LibraryView: View {
                         .frame(width: 80, alignment: .trailing)
                 }
                 .contentShape(Rectangle())
-                .onTapGesture(count: 2) {
+                .onTapGesture {
                     onPlayVideo(video.url)
                 }
                 .contextMenu {

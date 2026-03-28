@@ -81,8 +81,10 @@ public struct PlaybackMetrics: Sendable {
 
 // MARK: - OTT Platform-Grade Engine
 
+/// Core engine interacting with AVFoundation.
+/// Conforms to PlayerEngineProtocol for DI and architectural decoupling.
 @MainActor
-public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable, VideoDisplayLinkDelegate, AVPictureInPictureControllerDelegate {
+public final class PlayerEngine: NSObject, ObservableObject, PlayerEngineProtocol, @unchecked Sendable, VideoDisplayLinkDelegate, AVPictureInPictureControllerDelegate {
 
     // MARK: - State Machine (Single Source of Truth)
     @Published public private(set) var state: PlaybackState = .idle
@@ -92,12 +94,22 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
 
     // MARK: - Published Media State
     @Published public var currentTime: Double = 0
+    @Published public private(set) var bufferedTime: Double = 0
     @Published public var duration: Double = 0
-    @Published public var bufferedTime: Double = 0
-    @Published public var volume: Float = 0.8 { didSet { driver.player.volume = volume } }
-    @Published public var isMuted = false { didSet { driver.player.isMuted = isMuted } }
-    @Published public var playbackSpeed: Float = 1.0 { didSet { applyRate() } }
+    @Published public var playbackSpeed: Double = 1.0 { didSet { driver.player.rate = Float(playbackSpeed) } }
+    @Published public var volume: Double = 1.0 { didSet { driver.player.volume = Float(volume) } }
+    @Published public var isMuted: Bool = false { didSet { driver.player.isMuted = isMuted } }
     @Published public var videoSize: CGSize = .zero
+    @Published public var gravityMode: VideoGravityMode = .fit { didSet { renderer.gravityMode = gravityMode } }
+
+    // MARK: - Elite Rendering Assets
+    public let renderer = MetalVideoRenderer()
+    
+    @Published public var matrixIntensity: Double = 0.0 { didSet { renderer.matrixIntensity = matrixIntensity } }
+    
+    // MARK: - Lifecycle
+    public let displayLink = VideoDisplayLink()
+    public let frameExtractor = VideoFrameExtractor()
     @Published public var currentItemTitle: String = ""
     @Published public var error: PlayerError?
 
@@ -119,6 +131,8 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
     // Seek
     @Published private(set) var seekState: SeekState = .idle
 
+    private var shouldAutoPlay = false
+
     // MARK: - Internal Components
     private let core = PlayerCore()
     private let validator = AssetValidator()
@@ -127,9 +141,6 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
     private let eventLog = RingBuffer<LoggedEvent>(capacity: 512)
     private var eventCounter: UInt64 = 0
     
-    // Custom Video Rendering Pipeline
-    public let frameExtractor = VideoFrameExtractor()
-    public let displayLink = VideoDisplayLink()
     
     /// Public access to the AVPlayer (for AVPlayerLayer binding).
     public var player: AVPlayer { driver.player }
@@ -171,7 +182,7 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
     public init(driver: PlayerDriver = AVPlayerDriver()) {
         self.driver = driver
         super.init()
-        self.driver.player.volume = volume
+        self.driver.player.volume = Float(volume)
         setupObservers() // Renamed from setupTimeObserver
         setupSystemObservers()
         displayLink.setDelegate(self)
@@ -265,6 +276,10 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
             endPlaybackActivity()
         case (.readyToPlay, let .itemReady(dur)):
             duration = dur
+            if shouldAutoPlay {
+                shouldAutoPlay = false
+                play()
+            }
         case (.buffering, .bufferEmpty):
             stallCounter += 1
         case (.idle, _):
@@ -336,6 +351,7 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
         error = nil
         currentItemTitle = url.deletingPathExtension().lastPathComponent
         clearLoop()
+        shouldAutoPlay = false
         loadStartTime = Date()
         stallCounter = 0
         if retryCount == 0 { } else if self.error == nil { retryCount = 0 } // Only preserve retryCount if recovering
@@ -488,7 +504,12 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
 
     // MARK: - Public Playback API
 
-    public func play() { send(.userPlay) }
+    public func play() { 
+        if state == .loading {
+            shouldAutoPlay = true
+        }
+        send(.userPlay) 
+    }
     public func pause() { send(.userPause) }
     public func togglePlayPause() { isPlaying ? pause() : play() }
 
@@ -526,7 +547,7 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
     public func seekToPercent(_ pt: Double) { seek(to: duration * max(0, min(1, pt))) }
 
     private func applyRate() {
-        driver.play(rate: isPlaying ? playbackSpeed : 0)
+        driver.play(rate: Float(isPlaying ? playbackSpeed : 0))
     }
 
     // MARK: - Time Monitoring (coalesced)
@@ -629,11 +650,11 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
     public func toggleLoop() { isLooping ? clearLoop() : (loopA == nil ? setLoopA() : setLoopB()) }
 
     // MARK: - Volume/Speed
-    public func adjustVolume(by d: Float) { volume = max(0, min(1, volume + d)) }
+    public func adjustVolume(by delta: Double) { volume = max(0, min(1, volume + delta)) }
     public func toggleMute() { isMuted.toggle() }
     
-    public static let availableSpeeds: [Float] = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0]
-    public func setSpeed(_ speed: Float) { playbackSpeed = speed }
+    public static let availableSpeeds: [Double] = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0]
+    public func setSpeed(_ speed: Double) { playbackSpeed = speed }
     public func cycleSpeedUp() { if let i = Self.availableSpeeds.firstIndex(of: playbackSpeed), i < Self.availableSpeeds.count - 1 { setSpeed(Self.availableSpeeds[i + 1]) } }
     public func cycleSpeedDown() { if let i = Self.availableSpeeds.firstIndex(of: playbackSpeed), i > 0 { setSpeed(Self.availableSpeeds[i - 1]) } }
 
@@ -654,7 +675,7 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
     }
 
     // MARK: - Screenshot
-    public func captureScreenshot(savePath: String? = nil) {
+    public func captureScreenshot(savePath: URL?) {
         guard let asset = driver.player.currentItem?.asset else { return }
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
@@ -663,7 +684,7 @@ public final class PlayerEngine: NSObject, ObservableObject, @unchecked Sendable
             do {
                 let (image, _) = try await generator.image(at: time)
                 let nsImage = NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height))
-                let path = savePath ?? NSTemporaryDirectory()
+                let path = savePath?.path ?? NSTemporaryDirectory()
                 let fileName = "ProPlayer_\(Int(Date().timeIntervalSince1970)).png"
                 let fullPath = (path as NSString).appendingPathComponent(fileName)
                 if let tiff = nsImage.tiffRepresentation,

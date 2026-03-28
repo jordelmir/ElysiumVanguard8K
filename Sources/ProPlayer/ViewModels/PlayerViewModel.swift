@@ -4,8 +4,14 @@ import ProPlayerEngine
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
-    @Published var engine = PlayerEngine()
-    @Published var gravityMode: VideoGravityMode = .fit
+    @Published var engine: PlayerEngine = PlayerEngine()
+    @Published var gravityMode: VideoGravityMode = .fill {
+        didSet {
+            engine.gravityMode = gravityMode
+            // If the view is active, update the renderer directly
+            engine.renderer.gravityMode = gravityMode
+        }
+    }
     @Published var showControls = true
     @Published var isFullscreen = false
     @Published var osdMessage: String?
@@ -14,7 +20,15 @@ final class PlayerViewModel: ObservableObject {
     @Published var playlist = Playlist()
     @Published var customZoomScale: CGFloat = 1.0
     @Published var customZoomOffset: CGSize = .zero
-    @Published var settings = PlayerSettings.load()
+    @Published var matrixIntensity: Double = 0.0 { didSet { engine.matrixIntensity = matrixIntensity } }
+    @Published var settings = PlayerSettings.load() {
+        didSet {
+            engine.renderer.gravityMode = settings.defaultGravityMode
+            engine.renderer.renderingTier = settings.renderingTier
+            engine.renderer.ambientIntensity = settings.ambientIntensity
+            settings.save()
+        }
+    }
 
     // Video adjustments
     @Published var brightness: Double = 0
@@ -26,17 +40,45 @@ final class PlayerViewModel: ObservableObject {
     private var osdTask: Task<Void, Never>?
 
     init() {
-        gravityMode = settings.defaultGravityMode
-        engine.volume = settings.defaultVolume
+        gravityMode = .stretch
+        engine.volume = Double(settings.defaultVolume)
+        engine.renderer.gravityMode = .stretch
+        engine.renderer.renderingTier = settings.renderingTier
+        engine.renderer.ambientIntensity = settings.ambientIntensity
+        setupNotifications()
+    }
+    
+    private func setupNotifications() {
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: .proPlayerTogglePlayPause, object: nil, queue: .main) { _ in Task { @MainActor in self.togglePlayPause() } }
+        nc.addObserver(forName: .proPlayerSeekForward, object: nil, queue: .main) { n in Task { @MainActor in self.seekForward((n.object as? Double) ?? 5) } }
+        nc.addObserver(forName: .proPlayerSeekBackward, object: nil, queue: .main) { n in Task { @MainActor in self.seekBackward((n.object as? Double) ?? 5) } }
+        nc.addObserver(forName: .proPlayerSpeedUp, object: nil, queue: .main) { _ in Task { @MainActor in self.speedUp() } }
+        nc.addObserver(forName: .proPlayerSpeedDown, object: nil, queue: .main) { _ in Task { @MainActor in self.speedDown() } }
+        nc.addObserver(forName: .proPlayerCycleGravity, object: nil, queue: .main) { _ in Task { @MainActor in self.cycleGravityMode() } }
+        nc.addObserver(forName: .proPlayerScreenshot, object: nil, queue: .main) { _ in Task { @MainActor in self.captureScreenshot() } }
+        nc.addObserver(forName: .proPlayerToggleInfo, object: nil, queue: .main) { _ in Task { @MainActor in self.toggleVideoInfo() } }
+        nc.addObserver(forName: .proPlayerVolumeUp, object: nil, queue: .main) { _ in Task { @MainActor in self.volumeUp() } }
+        nc.addObserver(forName: .proPlayerVolumeDown, object: nil, queue: .main) { _ in Task { @MainActor in self.volumeDown() } }
+        nc.addObserver(forName: .proPlayerToggleMute, object: nil, queue: .main) { _ in Task { @MainActor in self.toggleMute() } }
+        nc.addObserver(forName: .proPlayerToggleFullscreen, object: nil, queue: .main) { _ in Task { @MainActor in self.toggleFullscreen() } }
     }
 
     // MARK: - File Loading
 
     func openFile(url: URL) {
+        // Stop previous instance if any
+        engine.stop()
+        
+        // Load and Play
         engine.loadFile(url: url)
         engine.play()
-        showOSD("Now Playing: \(url.deletingPathExtension().lastPathComponent)")
+        
+        showOSD("En vivo: \(url.deletingPathExtension().lastPathComponent)")
         resetControlsTimer()
+        
+        // Force an immediate UI refresh for the player
+        objectWillChange.send()
     }
 
     func openFiles(urls: [URL]) {
@@ -93,12 +135,12 @@ final class PlayerViewModel: ObservableObject {
 
     func speedUp() {
         engine.cycleSpeedUp()
-        showOSD("Speed: \(FormatUtils.speedString(engine.playbackSpeed))")
+        showOSD("Speed: \(FormatUtils.speedString(Float(engine.playbackSpeed)))")
     }
 
     func speedDown() {
         engine.cycleSpeedDown()
-        showOSD("Speed: \(FormatUtils.speedString(engine.playbackSpeed))")
+        showOSD("Speed: \(FormatUtils.speedString(Float(engine.playbackSpeed)))")
     }
 
     // MARK: - Video Gravity
@@ -127,6 +169,17 @@ final class PlayerViewModel: ObservableObject {
         showOSD("📐 \(mode.rawValue)")
     }
 
+    // MARK: - Upscaling
+    
+    var currentRenderingTier: SuperResolutionTier {
+        settings.renderingTier
+    }
+    
+    func setRenderingTier(_ tier: SuperResolutionTier) {
+        settings.renderingTier = tier
+        showOSD("✨ Upscaling: \(tier.rawValue)")
+    }
+
     // MARK: - A-B Loop
 
     func toggleLoop() {
@@ -143,15 +196,19 @@ final class PlayerViewModel: ObservableObject {
     // MARK: - Screenshot
 
     func captureScreenshot() {
-        engine.captureScreenshot(savePath: settings.screenshotSavePath)
+        let url = URL(fileURLWithPath: settings.screenshotSavePath)
+        engine.captureScreenshot(savePath: url)
         showOSD("📸 Screenshot Saved")
     }
 
     // MARK: - Fullscreen
 
     func toggleFullscreen() {
-        guard let window = NSApp.mainWindow else { return }
-        window.toggleFullScreen(nil)
+        // Try to find the window that is currently active or the main one
+        let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first { $0.isVisible }
+        guard let targetWindow = window else { return }
+        
+        targetWindow.toggleFullScreen(nil)
         isFullscreen.toggle()
     }
     

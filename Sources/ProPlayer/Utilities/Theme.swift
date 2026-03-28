@@ -111,10 +111,14 @@ enum ProTheme {
     enum Animations {
         static let quick = Animation.easeInOut(duration: 0.15)
         static let standard = Animation.easeInOut(duration: 0.25)
-        static let smooth = Animation.easeInOut(duration: 0.35)
-        static let slow = Animation.easeInOut(duration: 0.5)
-        static let spring = Animation.spring(response: 0.35, dampingFraction: 0.7)
-        static let bouncy = Animation.spring(response: 0.4, dampingFraction: 0.6)
+        static let smooth = Animation.timingCurve(0.4, 0, 0.2, 1, duration: 0.4) // Elite Cubic-Bezier
+        static let slow = Animation.easeInOut(duration: 0.6)
+        
+        // Elite Springs
+        static let spring = Animation.interpolatingSpring(mass: 1.0, stiffness: 100, damping: 15, initialVelocity: 0)
+        static let interactive = Animation.spring(response: 0.35, dampingFraction: 0.75, blendDuration: 0)
+        static let bouncy = Animation.spring(response: 0.4, dampingFraction: 0.5, blendDuration: 0)
+        static let elastic = Animation.spring(response: 0.5, dampingFraction: 0.4, blendDuration: 0)
     }
 }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import ProPlayerEngine
+import ProPlayerEngine
 
 struct ControlsOverlay: View {
     @ObservedObject var viewModel: PlayerViewModel
@@ -35,7 +36,7 @@ struct ControlsOverlay: View {
                     .lineLimit(1)
 
                 if viewModel.engine.videoSize.width > 0 {
-                    Text("\(Int(viewModel.engine.videoSize.width))×\(Int(viewModel.engine.videoSize.height)) • \(FormatUtils.speedString(viewModel.engine.playbackSpeed))")
+                    Text("\(Int(viewModel.engine.videoSize.width))×\(Int(viewModel.engine.videoSize.height)) • \(FormatUtils.speedString(Float(viewModel.engine.playbackSpeed)))")
                         .font(ProTheme.Fonts.caption)
                         .foregroundColor(ProTheme.Colors.textSecondary)
                 }
@@ -71,9 +72,9 @@ struct ControlsOverlay: View {
             // Speed menu
             Menu {
                 ForEach(PlayerEngine.availableSpeeds, id: \.self) { speed in
-                    Button(FormatUtils.speedString(speed)) {
+                    Button(FormatUtils.speedString(Float(speed))) {
                         viewModel.engine.setSpeed(speed)
-                        viewModel.showOSD("Speed: \(FormatUtils.speedString(speed))")
+                        viewModel.showOSD("Speed: \(FormatUtils.speedString(Float(speed)))")
                     }
                     .disabled(viewModel.engine.playbackSpeed == speed)
                 }
@@ -148,7 +149,7 @@ struct ControlsOverlay: View {
 
                     Slider(value: Binding(
                         get: { Double(viewModel.engine.volume) },
-                        set: { viewModel.engine.volume = Float($0) }
+                        set: { viewModel.engine.volume = $0 }
                     ), in: 0...1)
                     .frame(width: 80)
                     .tint(ProTheme.Colors.accentBlue)
@@ -158,6 +159,36 @@ struct ControlsOverlay: View {
 
                 // Right group: tools
                 HStack(spacing: ProTheme.Spacing.sm) {
+                    // Upscaling Quality Selector
+                    HStack(spacing: 2) {
+                        ForEach(SuperResolutionTier.allCases) { tier in
+                            Button {
+                                viewModel.setRenderingTier(tier)
+                            } label: {
+                                Text(tier.shortLabel)
+                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundColor(viewModel.currentRenderingTier == tier ? .white : ProTheme.Colors.textSecondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(viewModel.currentRenderingTier == tier ? ProTheme.Colors.accentBlue : Color.white.opacity(0.08))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.black.opacity(0.4))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+                    )
+                    .help("Upscaling Quality")
+
                     // A-B Loop
                     Button { viewModel.toggleLoop() } label: {
                         controlButton(

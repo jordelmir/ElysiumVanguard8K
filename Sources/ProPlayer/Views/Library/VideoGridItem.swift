@@ -1,4 +1,5 @@
 import SwiftUI
+import ProPlayerEngine
 import AppKit
 
 struct VideoGridItem: View {
@@ -103,7 +104,7 @@ struct VideoGridItem: View {
         .scaleEffect(isHovered ? 1.04 : 1.0)
         .shadow(color: isHovered ? ProTheme.Colors.accentBlue.opacity(0.8) : .clear, radius: 16)
         .animation(ProTheme.Animations.spring, value: isHovered)
-        .onTapGesture(count: 2) {
+        .onTapGesture {
             onPlay()
         }
         .contextMenu {

@@ -1,21 +1,21 @@
 import Foundation
 
-struct Playlist: Identifiable, Codable {
-    let id: UUID
-    var name: String
-    var items: [VideoItem]
-    var currentIndex: Int
-    var repeatMode: RepeatMode
-    var shuffleEnabled: Bool
-    var dateCreated: Date
-    var dateModified: Date
+public struct Playlist: Identifiable, Codable {
+    public let id: UUID
+    public var name: String
+    public var items: [VideoItem]
+    public var currentIndex: Int
+    public var repeatMode: RepeatMode
+    public var shuffleEnabled: Bool
+    public var dateCreated: Date
+    public var dateModified: Date
 
-    enum RepeatMode: String, Codable, CaseIterable {
+    public enum RepeatMode: String, Codable, CaseIterable {
         case off = "Off"
         case one = "Repeat One"
         case all = "Repeat All"
 
-        var icon: String {
+        public var icon: String {
             switch self {
             case .off: return "repeat"
             case .one: return "repeat.1"
@@ -24,7 +24,7 @@ struct Playlist: Identifiable, Codable {
         }
     }
 
-    init(
+    public init(
         id: UUID = UUID(),
         name: String = "Untitled Playlist",
         items: [VideoItem] = [],
@@ -42,24 +42,24 @@ struct Playlist: Identifiable, Codable {
         self.dateModified = Date()
     }
 
-    var currentItem: VideoItem? {
+    public var currentItem: VideoItem? {
         guard items.indices.contains(currentIndex) else { return nil }
         return items[currentIndex]
     }
 
-    var hasNext: Bool {
+    public var hasNext: Bool {
         currentIndex < items.count - 1 || repeatMode == .all
     }
 
-    var hasPrevious: Bool {
+    public var hasPrevious: Bool {
         currentIndex > 0 || repeatMode == .all
     }
 
-    var totalDuration: Double {
+    public var totalDuration: Double {
         items.reduce(0) { $0 + $1.duration }
     }
 
-    mutating func next() -> VideoItem? {
+    public mutating func next() -> VideoItem? {
         if shuffleEnabled {
             guard items.count > 1 else { return items.first }
             var newIndex = currentIndex
@@ -77,7 +77,7 @@ struct Playlist: Identifiable, Codable {
         return currentItem
     }
 
-    mutating func previous() -> VideoItem? {
+    public mutating func previous() -> VideoItem? {
         if currentIndex > 0 {
             currentIndex -= 1
         } else if repeatMode == .all {
@@ -88,12 +88,12 @@ struct Playlist: Identifiable, Codable {
         return currentItem
     }
 
-    mutating func addItem(_ item: VideoItem) {
+    public mutating func addItem(_ item: VideoItem) {
         items.append(item)
         dateModified = Date()
     }
 
-    mutating func removeItem(at index: Int) {
+    public mutating func removeItem(at index: Int) {
         guard items.indices.contains(index) else { return }
         items.remove(at: index)
         if currentIndex >= items.count {
@@ -102,7 +102,7 @@ struct Playlist: Identifiable, Codable {
         dateModified = Date()
     }
 
-    mutating func moveItem(from source: IndexSet, to destination: Int) {
+    public mutating func moveItem(from source: IndexSet, to destination: Int) {
         items.move(fromOffsets: source, toOffset: destination)
         dateModified = Date()
     }

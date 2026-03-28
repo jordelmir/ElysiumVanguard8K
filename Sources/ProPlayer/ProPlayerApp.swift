@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import ProPlayerEngine
 
 @main
 struct ElysiumVanguardApp: App {
@@ -87,6 +88,19 @@ struct ElysiumVanguardApp: App {
                 .keyboardShortcut("i", modifiers: .command)
             }
 
+            // View menu
+            CommandMenu("View") {
+                Button("Toggle Fullscreen") {
+                    NotificationCenter.default.post(name: .proPlayerToggleFullscreen, object: nil)
+                }
+                .keyboardShortcut("f", modifiers: [.control, .command])
+                
+                Button("Standard Fullscreen") {
+                    NotificationCenter.default.post(name: .proPlayerToggleFullscreen, object: nil)
+                }
+                .keyboardShortcut("f", modifiers: [])
+            }
+
             // Audio menu
             CommandMenu("Audio") {
                 Button("Volume Up") {
@@ -135,4 +149,5 @@ extension Notification.Name {
     static let proPlayerVolumeUp = Notification.Name("proPlayerVolumeUp")
     static let proPlayerVolumeDown = Notification.Name("proPlayerVolumeDown")
     static let proPlayerToggleMute = Notification.Name("proPlayerToggleMute")
+    static let proPlayerToggleFullscreen = Notification.Name("proPlayerToggleFullscreen")
 }
