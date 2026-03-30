@@ -12,16 +12,32 @@ rm -rf .build
 echo "⚙️ Compilando en modo Release (Elite Optimization)..."
 swift build -c release --product ProPlayer
 
-# 3. Empaquetado de la nueva versión
-VERSION="11.0.0-Elite"
+VERSION="13.0-Elite"
 BUILD_DIR=".build/release"
+APP_NAME="Elysium Vanguard Pro Player.app"
+
+echo "📦 Construyendo macOS App Bundle nativo..."
+rm -rf "$APP_NAME"
+mkdir -p "$APP_NAME/Contents/MacOS"
+mkdir -p "$APP_NAME/Contents/Resources"
+
+# Copiar Info.plist y binario
+cp "Info.plist" "$APP_NAME/Contents/Info.plist"
+cp "$BUILD_DIR/ProPlayer" "$APP_NAME/Contents/MacOS/ElysiumVanguardProPlayer"
+chmod +x "$APP_NAME/Contents/MacOS/ElysiumVanguardProPlayer"
+
+# Si existen recursos (assets, etc), copiarlos (opcional pero bueno)
+if [ -d "$BUILD_DIR/ProPlayer_ProPlayerView.bundle" ]; then
+    cp -r "$BUILD_DIR/ProPlayer_ProPlayerView.bundle" "$APP_NAME/Contents/Resources/"
+fi
+
+# Empaquetar
 RELEASE_NAME="ProPlayer_v${VERSION}_$(date +%Y%m%d).zip"
-
 echo "📦 Empaquetando la versión v${VERSION}..."
-zip -r "$RELEASE_NAME" "$BUILD_DIR/ProPlayer" PRO_USAGE_GUIDE.md README.md
+zip -r "$RELEASE_NAME" "$APP_NAME" PRO_USAGE_GUIDE.md README.md
 
-echo "✅ Compilación completada: $RELEASE_NAME"
+echo "✅ Compilación y empaquetado completados: $RELEASE_NAME"
 
-# 4. Iniciar la nueva versión para demostración
+# 4. Iniciar la nueva versión para demostración como una App real (permite Spaces Full Screen)
 echo "▶️ Iniciando la aplicación..."
-./$BUILD_DIR/ProPlayer
+open "$APP_NAME"

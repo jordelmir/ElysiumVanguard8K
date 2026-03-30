@@ -48,10 +48,14 @@ struct WindowController {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         
-        // 3. Make it key and front
+        // 3. Forzar nivel superior y ocultar la barra de Mac (Manzanita) para procesos unbundled
+        NSApp.presentationOptions = [.autoHideMenuBar, .autoHideDock]
+        window.level = .normal
+        
+        // 4. Make it key and front
         window.makeKeyAndOrderFront(nil)
         
-        // 4. Si no estamos ya en Full Screen, ordenamos a macOS crear el Space y transicionar
+        // 5. Si no estamos ya en Full Screen, ordenamos a macOS crear el Space y transicionar
         if !window.styleMask.contains(.fullScreen) {
             window.toggleFullScreen(nil)
         }
@@ -60,6 +64,9 @@ struct WindowController {
     @MainActor
     static func exitImmersiveFullScreen() {
         guard let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible }) else { return }
+        
+        // Restaurar la barra de menú nativa al salir de reproducción
+        NSApp.presentationOptions = []
         
         // 1. Si seguimos atrapados en Full Screen, obligamos a macOS a regresar al Desktop
         if window.styleMask.contains(.fullScreen) {

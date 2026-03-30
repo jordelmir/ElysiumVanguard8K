@@ -240,8 +240,16 @@ final class PlayerViewModel: ObservableObject {
         let window = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first { $0.isVisible }
         guard let targetWindow = window else { return }
         
+        let isCurrentlyFS = targetWindow.styleMask.contains(.fullScreen)
         targetWindow.toggleFullScreen(nil)
-        // Note: isFullscreen is now synced via NSWindow notifications, not manual toggle
+        
+        // Forzar autohide de la Manzanita si entramos o restaurarla si salimos 
+        // (Esto es crítico cuando corremos el binario desde la terminal sin Bundle)
+        if isCurrentlyFS {
+            NSApp.presentationOptions = []
+        } else {
+            NSApp.presentationOptions = [.autoHideMenuBar, .autoHideDock]
+        }
     }
     
     // MARK: - Picture in Picture

@@ -1,33 +1,58 @@
-# ProPlayer Elite v13.0: Guía de Uso Profesional
+# 💎 ProPlayer Elite: The Master Experience Guide
 
-Bienvenido a la cima de la reproducción multimedia en macOS. Esta guía detalla cómo aprovechar al máximo el motor **Metal Pipeline v13.0**, un motor de post-procesamiento de video con calidad de estudio ("Hollywood-Grade").
-
-## 1. Studio-Grade Enhancements (Ajustes de Renderizado)
-Las capacidades matemáticas avanzadas de la GPU de tu Mac (Apple Silicon) están disponibles dentro de `Ajustes > Video`.
-
-### Upscaling Quality / Super-Resolución (FSR 1.0 Aproximado)
-Selecciona cómo tratar los videos comprimidos o de baja resolución:
-*   **4K Upscale:** Escalado base purista vía interpolación Sinc de 6 toques (*Lanczos-3*). Ideal para casi todo.
-*   **Ultra AI (Neural):** Lanczos + Ligero RCAS (Robust Contrast Adaptive Sharpening). Nitidez sin artefactos.
-*   **Ultra 5K (Edge Directed) & Extreme 8K:** Usan interpolación matemática sub-pixel (*EASU* direccional) para forzar unos contornos y microtexturas cristalinos en un solo ciclo de reloj. **Advertencia:** Consume mucha capacidad de la GPU.
-*   **Anime Adaptive:** Filtro espacial paramétrico ajustado matemáticamente para proteger las gruesas "líneas de acción" (Edge Detection) en animación japonesa, manteniendo los colores limpios.
-
-### ACES Filmic Tone Mapping (HDR→SDR)
-*   **Qué hace:** Evita que los videos grabados en HDR o Dolby Vision se vean "quemados", blancos o lavados en tu monitor SDR estándar usando las curvas base de "The Academy Color Encoding System".
-*   **Recomendación:** Actívalo solo para películas HDR. 
-
-### Temporal Noise Reduction (TNR)
-*   **Qué hace:** Mezcla y compara el fotograma actual con el anterior detectando qué zonas están en movimiento y cuáles están estáticas (Cielo, paredes) para "planchar" y eliminar el ruido/grano de compresión de streaming.
-*   **Recomendación:** Útil para videos de YouTube/web. **Apágalo para Animación/Anime** para evitar trazos sombra (ghosting).
-
-### Color Temperature / Film Grain
-*   **Kelvin Slider:** Si lo pones a 4500K obtendrás luz ambarina/cálida para sesiones nocturnas; si lo pones a 7500K forzarás blancos fríos de laboratorio.
-*   **Film Grain:** Inyecta "ruido rosa matemático" variable según la luminancia del píxel para imitar rollos de 35mm. Usa 5% para un "Vintage Cinematic Look", lo que además elimina el 'banding' de color en las sombras.
-
-## 2. Flujo de Trabajo y UX
-*   **Arrastrar y Soltar**: La UI te permite agarrar tu video (`.mp4`, `.mov`, `.mkv` compatible) desde el Finder y lanzarlo sobre la aplicación, que pasará a modo Cine instantáneamente.
-*   **Auto-Play "Zero Latency"**: El core reacciona a los milisegundos en que `AVFoundation` confirma lectura en buffer y auto-transiciona la pantalla.
-*   **Espacios de Pantalla Completa**: Usa el botón estándar macOS o pulsa `F`. Gracias a la última actualización arquitectónica, esto convive perfectamente con el WindowManager del sistema operativo.
+Welcome to the definitive media experience for macOS. ProPlayer Elite is tuned for high-fidelity rendering. This guide helps you master the "Elite" features of the v13.0 engine.
 
 ---
-*ProPlayer Elite: Diseñado por ingenieros, para cinéfilos inflexibles. Top World Standard.*
+
+## 🚀 Extreme Rendering Tiers
+
+The v13.0 engine introduces two new tiers beyond standard 4K:
+
+### 1. 🌌 Ultra 5K (Edge Directed)
+*   **Best for**: 1080p and 1440p content on Studio Displays or 5K iMacs.
+*   **Kernel**: Uses **EASU** (Edge Adaptive Spatial Upsampling). Unlike standard scaling, it detects contrast edges and applies directional interpolation to keep lines razor-sharp without "ringing" artifacts.
+
+### 2. 🛰️ Extreme 8K (EASU + RCAS)
+*   **Best for**: High-bitrate 4K content being upscaled for large format displays or 8K setups.
+*   **Pipeline**: Combines EASU with **RCAS** (Robust Contrast Adaptive Sharpening). It restores high-frequency textures (skin, fabric, grain) based on local contrast analysis.
+*   **⚠️ Thermal Note**: On fanless devices (MacBook Air M1/M2), using 8K tier while on battery may lead to thermal throttling. Plug in for the best 120fps experience.
+
+---
+
+## 🎬 Cinematic Post-Processing
+
+Our Metal pipeline includes a suite of "Non-Destructive" filters:
+
+- **ACES Filmic Tone Mapping**: Automatically converts HDR10/Dolby Vision metadata to your display's SDR capability. It provides a natural "log" roll-off in highlights, avoiding the "burnt" look of standard players.
+- **Film Grain Synthesis**: Adds 35mm stochastically generated grain. Why? Modern digital video can look "plasticky" due to heavy compression. Film grain restores the organic motion that separates home video from cinema.
+- **Temporal Noise Reduction (TNR)**: If you notice "blocks" in dark scenes of low-quality files, enable TNR. It uses the previous frame to average out compression noise without losing edge detail.
+
+---
+
+## ⌨️ Elite Keyboard Protocol
+
+Master these shortcuts for a keyboard-driven workflow:
+
+| Action | Shortcut |
+| :--- | :--- |
+| **Play / Pause** | `Space` / `K` |
+| **Fullscreen (Native Space)** | `F` / `Double Click` |
+| **Seek Forward/Back** | `Right` / `Left` (5s) or `L` / `J` (10s) |
+| **Big Seek (30s)** | `Shift + Right` / `Shift + Left` |
+| **Volume Control** | `Up` / `Down` |
+| **Cycle Speed** | `[` (Slower) / `]` (Faster) |
+| **Cycle Aspect Ratio** | `A` (Fit, Fill, Zoom) |
+| **Toggle Mute** | `M` |
+| **Screenshot (Native PNG)** | `S` |
+| **Video Metadata Overlay** | `Cmd + I` |
+
+---
+
+## 📁 Native macOS Integration
+
+- **Drag & Drop**: Drag any file or folder directly into the player to start instant playback.
+- **Immersive Windows**: The player window is "Edge-to-Edge". Use the standard macOS traffic lights (Green button) for a seamless FullScreen Space that hides the Apple Menu bar completely.
+
+---
+
+*ProPlayer Elite v13.0 - Designed for those who see the difference.*

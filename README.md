@@ -1,66 +1,65 @@
-# ProPlayer Elite 
-**The Ultimate Native Video Playback Engine for macOS Apple Silicon**
+# 🚀 ProPlayer Elite — The Native Gold Standard for macOS Rendering
 
-![Platform](https://img.shields.io/badge/Platform-macOS_14.0+-black?logo=apple)
-![Architecture](https://img.shields.io/badge/Architecture-Apple_Silicon_M1%2BM2%2BM3-blue)
-![Swift](https://img.shields.io/badge/Swift-6.0_Strict_Concurrency-orange)
-![Engine](https://img.shields.io/badge/Engine-Metal_%2B_AVFoundation-purple)
-
-**ProPlayer Elite** is a professional-grade, zero-latency video player architected from the ground up for macOS. Bypassing standard limitations, it leverages a custom **Metal GPU Pipeline (v13.0)** directly attached to AVFoundation's pixel buffers to deliver Hollywood-studio rendering quality, real-time upscaling, and post-processing historically reserved for high-end color grading suites.
+ProPlayer Elite is a professional-grade media engine architected from the ground up for **Apple Silicon**. It bypasses standard AVPlayer limitations by leveraging a custom **Metal v13.0** rendering pipeline, delivering industry-leading visual fidelity with near-zero system overhead.
 
 ---
 
-## 🚀 The Metal v13.0 Pipeline
+## 💎 The "Elite" Rendering Pipeline (Metal v13.0)
 
-Unlike standard players (VLC, QuickTime) that rely on `AVPlayerLayer` or simple OpenGL/Bilinear upscaling, ProPlayer intercepts raw `CVPixelBuffer` frames via `CVMetalTextureCache` and processes them through a custom fragment shader architecture executing in nanoseconds on Apple Silicon GPU cores.
+While traditional players rely on basic bilinear scaling, ProPlayer Elite implements a sophisticated multi-stage spatial-temporal fragment shader:
 
-### Studio-Grade Processing Features
-*   **FSR 1.0 Approximate Upscaling (5K & 8K):** Edge Adaptive Spatial Upsampling (EASU) with Robust Contrast Adaptive Sharpening (RCAS) math forces ultra-crisp edges on compressed or low-resolution video (720p/1080p).
-*   **Lanczos-3 Kernel:** Pure mathematical 6-tap sinc-windowed upscaling for pristine 4K rendering.
-*   **ACES Filmic Tone Mapping:** Real-time HDR-to-SDR conversion using the Academy Color Encoding System. Preserves highlights and wide-color gamut without blowing out the sky.
-*   **Temporal Noise Reduction (TNR):** Double-buffered frame fusion. Analyzes inter-frame Luma gradients to eliminate compression artifacts and static grain without introducing motion ghosting.
-*   **Cinematic Film Grain Synthesis:** Procedural 35mm stochastic noise generation (luma-adaptive) to mask banding and emulate projection.
-*   **Color Temperature Control:** Real-time Kelvin approximation offset (2500K - 10000K).
+- **Ultra 5K & Extreme 8K Upscaling**: Powered by an edge-adaptive EASU (Edge Adaptive Spatial Upsampling) kernel. It identifies contrast edges in real-time to prevent haloing and ringing.
+- **Robust CAS (Contrast Adaptive Sharpening)**: A specialized RCAS pass that restores high-frequency detail based on local luminance variance.
+- **ACES Filmic Tone Mapping**: Industry-standard HDR-to-SDR conversion. Provides "filmic" highlights and preserves shadow detail even on non-HDR displays.
+- **Temporal Noise Reduction (TNR)**: A dual-buffer feedback loop that filters compression artifacts by analyzing inter-frame motion vectors.
+- **Film Grain Synthesis**: Luminance-adaptive stochastically generated 35mm-style grain for a premium cinematic texture.
 
 ---
 
-## ⚡️ Zero-Latency & Hardened Concurrency
+## 🏗️ Technical Architecture
 
-*   **Swift 6 Strict Actor-Isolation:** 100% Data-Race free. `PlayerEngine` runs purely isolated memory access via `@MainActor` UI synchronization and background `Task` detachments.
-*   **Auto-Play Intent Queueing:** The video playback intention is buffered the exact millisecond the user clicks a file, initiating playback the microsecond the AVAsset reports `readyToPlay`.
-*   **Zero Memory Leaks:** ARC-enforced memory management with aggressive `CVPixelBuffer` and `CVMetalTexture` lifecycle flushing. Tested under 4K+ HDR load on M1.
+### Core Engine (`ProPlayerEngine`)
+- **Metal Integration**: 100% GPU-accelerated frame processing.
+- **CVPixelBuffer Zero-Copy**: Utilizes `CVMetalTextureCache` for direct memory access between the video decoder and the GPU, eliminating CPU-side frame copying.
+- **Swift 6 Strict Concurrency**: Actors-based isolation to guarantee 0 data races in the high-frequency rendering loop.
 
----
-
-## 🖥️ System Architecture
-
-| Layer | Technology | Responsibility |
-| :--- | :--- | :--- |
-| **Presentation** | SwiftUI `WindowGroup` | Glassmorphism UI, Context Menus, Library Layouts |
-| **Orchestration** | `PlayerViewModel` | MVVM bridging, Input handling (Shortcuts, Gestures) |
-| **Decoding** | `AVFoundation` | Hardware-accelerated decoding (H.264, HEVC, ProRes) |
-| **GPU Rasterization** | `MetalKit` (`MTKView`) | 60/120Hz display link, V-Sync, Viewport handling |
-| **Post-Processing** | Custom MSL (`Shaders.metal`) | EASU, Lanczos, Tone Mapping, TNR, Pixel shading |
+### UI Architecture (`ProPlayer App`)
+- **SwiftUI + AppKit Bridge**: A modern declarative UI layer backed by deep AppKit window management for **Immersive FullScreen** support.
+- **Responsive Layout**: Designed for the "Desktop First" experience, supporting drag-and-drop, advanced keyboard shortcuts (J/K/L, Space, [, ]), and native macOS gestures.
 
 ---
 
-## 🛠 Compilation & Deployment
+## 🔒 Security & Privacy (The "Golden Master" Audit)
 
-The project is structured efficiently around Swift Package Manager (SPM) and standard shell automation.
+- **Zero Data Leaks**: Strict `.gitignore` policy excluding all `.env`, sensitive Apple Developer certificates, and build artifacts.
+- **Offline First**: No telemetry, no external trackers. Your media data never leaves your machine.
+- **Sandbox Ready**: Architected to comply with macOS App Sandbox requirements.
+
+---
+
+## 🛠️ Build & Development
+
+The project includes a specialized automation script for creating production-ready `.app` bundles that support native macOS Spaces.
 
 ```bash
-# Compile Release Build & Package as ZIP (Creates macOS executable bundle)
-chmod +x build_elite_v11.sh
-./build_elite_v11.sh
+# Build the Elite Golden Master
+sh build_elite_v11.sh
 ```
 
-### Security & Environment (`.env` & `.gitignore`)
-This repository has been audited for zero secrets leakage. The `.gitignore` is completely locked down, protecting:
-*   `.env` and `.env.*` files (Development vectors)
-*   `.p8`, `.cert`, `.mobileprovision` (Apple Code Signing credentials)
-*   DerivedData, `.build/`, `.app`, and `.zip` artifacts (Compilation clutter)
+---
 
-If you plan to connect remote telemetry (Sentry, Crashlytics) or Firebase/Supabase in the future, clone `.env.example` as `.env` locally.
+## 📜 Professional Documentation
+- [Usage Guide](file:///PRO_USAGE_GUIDE.md): Detailed explanation of all "Elite" settings and thermal performance tips.
+- [Walkthrough](file:///walkthrough.md): Full development history and milestone logs.
 
 ---
-*Architected and developed with an obsession for performance. "Top World Standard".*
+
+### 🏷️ SEO & Metadata
+**Keywords**: Video Player, macOS, Metal, Swift 6, 8K Video, FSR, ACES, HDR, Apple Silicon, M1, M2, M3, Professional Rendering.
+
+**Repository Topics**: `macos`, `swift`, `metal`, `video-player`, `4k-video`, `8k-video`, `apple-silicon`, `rendering-engine`, `proplayer`.
+
+---
+
+Developed with ❤️ by **ProPlayer Elite Team**. 
+*The ultimate convergence of minimalism and raw power.*
